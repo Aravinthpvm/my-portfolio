@@ -203,6 +203,7 @@ function Band({ isMobile, maxSpeed = 50, minSpeed = 10 }) {
         // Create Canvas Texture
         const tex = new THREE.CanvasTexture(canvas);
         tex.colorSpace = THREE.SRGBColorSpace;
+        tex.flipY = false;
         tex.needsUpdate = true;
         setCustomCardTexture(tex);
       }
