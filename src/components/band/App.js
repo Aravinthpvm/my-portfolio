@@ -136,6 +136,84 @@ function Band({ isMobile, maxSpeed = 50, minSpeed = 10 }) {
   const { nodes, materials } = useGLTF(GLTF_PATH);
   const texture = useTexture(TEXTURE_PATH);
   const { width, height } = useThree((state) => state.size);
+  const [customCardTexture, setCustomCardTexture] = useState(null);
+
+  useEffect(() => {
+    const baseImg = new Image();
+    const ppImg = new Image();
+    let loadedCount = 0;
+    
+    const checkLoaded = () => {
+      loadedCount++;
+      if (loadedCount === 2) {
+        const canvas = document.createElement('canvas');
+        canvas.width = 512;
+        canvas.height = 512;
+        const ctx = canvas.getContext('2d');
+        
+        // Draw the extracted card base layout
+        ctx.drawImage(baseImg, 0, 0);
+        
+        // Dynamically match and fill the text area to erase 'RIFQI M.A'
+        const pixel = ctx.getImageData(300, 350, 1, 1).data;
+        ctx.fillStyle = `rgb(${pixel[0]}, ${pixel[1]}, ${pixel[2]})`;
+        ctx.fillRect(260, 315, 245, 45);
+        
+        // Write 'ARAVINTHAN B'
+        ctx.fillStyle = '#111111';
+        ctx.font = 'bold 24px "Inter", sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('ARAVINTHAN B', 383, 338);
+        
+        // Clip and draw PP.png over the old headshot area
+        ctx.save();
+        const x = 16, y = 22, w = 219, h = 344, r = 16;
+        ctx.beginPath();
+        ctx.moveTo(x + r, y);
+        ctx.lineTo(x + w - r, y);
+        ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+        ctx.lineTo(x + w, y + h - r);
+        ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+        ctx.lineTo(x + r, y + h);
+        ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+        ctx.lineTo(x, y + r);
+        ctx.quadraticCurveTo(x, y, x + r, y);
+        ctx.closePath();
+        ctx.clip();
+        
+        // Draw PP image as cover
+        const imgRatio = ppImg.width / ppImg.height;
+        const cardRatio = w / h;
+        let drawWidth, drawHeight, drawX, drawY;
+        if (imgRatio > cardRatio) {
+          drawHeight = h;
+          drawWidth = h * imgRatio;
+          drawX = x + (w - drawWidth) / 2;
+          drawY = y;
+        } else {
+          drawWidth = w;
+          drawHeight = w / imgRatio;
+          drawX = x;
+          drawY = y + (h - drawHeight) / 2;
+        }
+        
+        ctx.drawImage(ppImg, drawX, drawY, drawWidth, drawHeight);
+        ctx.restore();
+        
+        // Create Canvas Texture
+        const tex = new THREE.CanvasTexture(canvas);
+        tex.colorSpace = THREE.SRGBColorSpace;
+        tex.needsUpdate = true;
+        setCustomCardTexture(tex);
+      }
+    };
+    
+    baseImg.src = '/assets/extracted_card.png';
+    baseImg.onload = checkLoaded;
+    
+    ppImg.src = '/assets/PP.png';
+    ppImg.onload = checkLoaded;
+  }, []);
 
   const [curve] = useState(
     () =>
@@ -260,7 +338,10 @@ function Band({ isMobile, maxSpeed = 50, minSpeed = 10 }) {
             }}
           >
             <mesh geometry={nodes.card.geometry}>
-              <meshPhysicalMaterial {...materials.base} />
+              <meshPhysicalMaterial 
+                {...materials.base} 
+                map={customCardTexture || materials.base.map}
+              />
             </mesh>
             <mesh geometry={nodes.clip.geometry} material={materials.metal} />
             <mesh geometry={nodes.clamp.geometry} material={materials.metal} />

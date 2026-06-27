@@ -7,6 +7,7 @@ import AnimatedBackground from '@/components/AnimatedBackground'
 import Navbar from '@/components/ui/Navbar'
 import Hero from '@/components/sections/Hero'
 import About from '@/components/sections/About'
+import Experience from '@/components/sections/Experience'
 import PortfolioShowcase from '@/components/sections/PortfolioShowcase'
 import ContactSection from '@/components/sections/contact/ContactSection'
 import WelcomeScreen from '@/components/WelcomeScreen'
@@ -76,6 +77,7 @@ useEffect(() => {
         <Navbar />
         <Hero showApp={showApp} />
         <About />
+        <Experience />
         <PortfolioShowcase />
         <ContactSection />
       </div>
