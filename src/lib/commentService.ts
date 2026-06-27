@@ -1,7 +1,3 @@
-import { supabase } from '@/lib/supabase'
-
-const isLocalOnly = !process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-
 // Fallback comments stored in localStorage
 const getLocalComments = (): any[] => {
   if (typeof window === 'undefined') return [];
@@ -20,70 +16,73 @@ const saveLocalComments = (comments: any[]) => {
   }
 };
 
+let isDbConnected: boolean | null = null;
+
+async function checkDbConfig(): Promise<boolean> {
+  if (isDbConnected !== null) return isDbConnected;
+  try {
+    const res = await fetch('/api/config');
+    const data = await res.json();
+    isDbConnected = !!data.dbConnected;
+  } catch {
+    isDbConnected = false;
+  }
+  return isDbConnected;
+}
+
 export const fetchCommentsService = async () => {
-  if (isLocalOnly) {
+  const dbActive = await checkDbConfig();
+  if (!dbActive) {
     return getLocalComments();
   }
-
-  const { data, error } = await supabase
-    .from('comments')
-    .select('*')
-    .order('is_pinned', { ascending: false })
-    .order('created_at', { ascending: false })
-
-  if (error) throw error
-
-  return data || []
+  try {
+    const res = await fetch('/api/comments');
+    if (!res.ok) throw new Error('API failed');
+    return await res.json();
+  } catch (e) {
+    console.error('fetchComments client API error, using static fallback:', e);
+    return getLocalComments();
+  }
 }
 
 export const likeCommentService = async (
-  id: number,
+  id: string | number,
   currentLikes: number
 ) => {
-  const newLikes = (currentLikes || 0) + 1
-
-  if (isLocalOnly) {
+  const newLikes = (currentLikes || 0) + 1;
+  const dbActive = await checkDbConfig();
+  if (!dbActive) {
     const comments = getLocalComments();
     const updated = comments.map(c => c.id === id ? { ...c, likes: newLikes } : c);
     saveLocalComments(updated);
     return newLikes;
   }
-
-  const { error } = await supabase
-    .from('comments')
-    .update({ likes: newLikes })
-    .eq('id', id)
-
-  if (error) throw error
-
-  return newLikes;
+  try {
+    const res = await fetch('/api/comments/like', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ commentId: id.toString() })
+    });
+    if (!res.ok) throw new Error('API failed');
+    const data = await res.json();
+    return data.likes;
+  } catch (e) {
+    console.error('likeComment client API error, using fallback:', e);
+    const comments = getLocalComments();
+    const updated = comments.map(c => c.id === id ? { ...c, likes: newLikes } : c);
+    saveLocalComments(updated);
+    return newLikes;
+  }
 }
 
-export const uploadCommentImageService = async (
-  image: File
-) => {
-  if (isLocalOnly) {
-    // Return a base64 or temporary URL
-    return new Promise<string>((resolve) => {
-      const reader = new FileReader();
-      reader.onloadend = () => resolve(reader.result as string);
-      reader.readAsDataURL(image);
-    });
-  }
-
-  const fileName = `${Date.now()}-${image.name}`
-
-  const { error } = await supabase.storage
-    .from('comments')
-    .upload(fileName, image)
-
-  if (error) throw error
-
-  const { data } = supabase.storage
-    .from('comments')
-    .getPublicUrl(fileName)
-
-  return data.publicUrl
+export const uploadCommentImageService = async (image: File): Promise<string> => {
+  // Convert image file to self-contained Base64 Data URL for storage in MongoDB
+  return new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => resolve(reader.result as string);
+    reader.onerror = reject;
+    reader.readAsDataURL(image);
+  });
 }
 
 export const createCommentService = async ({
@@ -95,10 +94,11 @@ export const createCommentService = async ({
   comment: string
   imageUrl: string | null
 }) => {
-  if (isLocalOnly) {
+  const dbActive = await checkDbConfig();
+  if (!dbActive) {
     const comments = getLocalComments();
     const newComment = {
-      id: Date.now(),
+      id: Date.now().toString(),
       name,
       comment,
       image_url: imageUrl,
@@ -111,23 +111,29 @@ export const createCommentService = async ({
     saveLocalComments([newComment, ...comments]);
     return newComment;
   }
-
-  const { data, error } = await supabase
-    .from('comments')
-    .insert([
-      {
-        name,
-        comment,
-        image_url: imageUrl,
-        likes: 0,
-        replies: [],
-        is_pinned: false,
-      },
-    ])
-    .select()
-    .single()
-
-  if (error) throw error
-
-  return data
-}
+  try {
+    const res = await fetch('/api/comments', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, comment, image_url: imageUrl })
+    });
+    if (!res.ok) throw new Error('API failed');
+    return await res.json();
+  } catch (e) {
+    console.error('createComment client API error, using fallback:', e);
+    const comments = getLocalComments();
+    const newComment = {
+      id: Date.now().toString(),
+      name,
+      comment,
+      image_url: imageUrl,
+      likes: 0,
+      replies: [],
+      is_pinned: false,
+      created_at: new Date().toISOString(),
+      liked_by_admin: false
+    };
+    saveLocalComments([newComment, ...comments]);
+    return newComment;
+  }
+}

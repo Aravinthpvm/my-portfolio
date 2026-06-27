@@ -6,8 +6,8 @@
 import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
-import { supabase } from '@/lib/supabase'
 import { localProjects } from '@/lib/portfolioData'
+import { fetchProjects } from '@/lib/portfolioService'
 import {
   ArrowLeft,
   ChevronLeft,
@@ -44,23 +44,18 @@ export default function PortfolioDetailPage() {
   }, [])
 
   const fetchProject = async () => {
-    const isLocalOnly = !process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-    if (isLocalOnly) {
+    try {
+      const projects = await fetchProjects();
+      const found = projects.find((p: any) => p.id === id);
+      if (found) {
+        setProject(found);
+      }
+    } catch (e) {
+      console.error('Failed to fetch project detail:', e);
       const found = localProjects.find((p) => p.id === id);
       if (found) {
         setProject(found);
       }
-      return;
-    }
-
-    const { data } = await supabase
-      .from('projects')
-      .select('*')
-      .eq('id', id)
-      .single()
-
-    if (data) {
-      setProject(data)
     }
   }
 

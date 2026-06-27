@@ -16,6 +16,8 @@ export default function useComments() {
   useEffect(() => {
     fetchInitialComments()
 
+    if (!supabase) return;
+
     const channel = supabase
       .channel('comments-live')
       .on(
