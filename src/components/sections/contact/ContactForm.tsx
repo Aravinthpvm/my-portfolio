@@ -1,5 +1,4 @@
-'use client'
-
+import { useState } from 'react'
 import { motion, Variants } from 'framer-motion'
 import {
   Send,
@@ -7,6 +6,7 @@ import {
   Mail,
   MessageSquare,
   ArrowUpRight,
+  Loader2,
 } from 'lucide-react'
 
 import {
@@ -16,6 +16,9 @@ import {
   FaYoutube,
   FaTiktok,
 } from 'react-icons/fa'
+
+import { db, isFirebaseConfigured } from '@/lib/firebase'
+import { collection, addDoc } from 'firebase/firestore'
 
 const smoothEase: [number, number, number, number] = [
   0.22,
@@ -55,6 +58,52 @@ const socialLinks = [
 ]
 
 export default function ContactForm() {
+  const [name, setName] = useState('')
+  const [email, setEmail] = useState('')
+  const [message, setMessage] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [status, setStatus] = useState<{ type: 'success' | 'error' | null; text: string }>({ type: null, text: '' })
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!name.trim() || !email.trim() || !message.trim()) {
+      setStatus({ type: 'error', text: 'Please fill in all fields.' })
+      return
+    }
+    setLoading(true)
+    setStatus({ type: null, text: '' })
+
+    try {
+      if (isFirebaseConfigured && db) {
+        await addDoc(collection(db, 'messages'), {
+          name: name.trim(),
+          email: email.trim().toLowerCase(),
+          message: message.trim(),
+          created_at: new Date().toISOString(),
+        })
+      } else {
+        const localMsgs = localStorage.getItem('portfolio-messages')
+        const msgs = localMsgs ? JSON.parse(localMsgs) : []
+        msgs.unshift({
+          name: name.trim(),
+          email: email.trim().toLowerCase(),
+          message: message.trim(),
+          created_at: new Date().toISOString(),
+        })
+        localStorage.setItem('portfolio-messages', JSON.stringify(msgs))
+      }
+      setStatus({ type: 'success', text: 'Thank you! Your message was sent successfully.' })
+      setName('')
+      setEmail('')
+      setMessage('')
+    } catch (err) {
+      console.error(err)
+      setStatus({ type: 'error', text: 'Failed to send message. Please try again.' })
+    } finally {
+      setLoading(false)
+    }
+  }
+
   return (
     <motion.div
       initial={{ opacity: 0, x: -40 }}
@@ -82,7 +131,22 @@ export default function ContactForm() {
       </motion.div>
 
       {/* FORM */}
-      <div className="space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-4">
+        {/* STATUS MESSAGE */}
+        {status.type && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className={`p-4 rounded-xl text-xs font-medium border ${
+              status.type === 'success'
+                ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400'
+                : 'bg-rose-500/10 border-rose-500/20 text-rose-400'
+            }`}
+          >
+            {status.text}
+          </motion.div>
+        )}
+
         {/* NAME */}
         <motion.div
           variants={fieldVariants}
@@ -95,8 +159,12 @@ export default function ContactForm() {
             <User className="absolute left-4 top-1/2 -translate-y-1/2 text-white/40" />
 
             <input
+              required
+              disabled={loading}
+              value={name}
+              onChange={(e) => setName(e.target.value)}
               placeholder="Your Name"
-              className="w-full rounded-2xl border border-white/15 bg-black/20 pl-12 pr-4 py-4 outline-none transition duration-200 focus:border-white focus:ring-1 focus:ring-white/40"
+              className="w-full rounded-2xl border border-white/15 bg-black/20 pl-12 pr-4 py-4 outline-none transition duration-200 focus:border-white focus:ring-1 focus:ring-white/40 disabled:opacity-50"
             />
           </div>
         </motion.div>
@@ -113,8 +181,13 @@ export default function ContactForm() {
             <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-white/40" />
 
             <input
+              required
+              type="email"
+              disabled={loading}
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               placeholder="Your Email"
-              className="w-full rounded-2xl border border-white/15 bg-black/20 pl-12 pr-4 py-4 outline-none transition duration-200 focus:border-white focus:ring-1 focus:ring-white/40"
+              className="w-full rounded-2xl border border-white/15 bg-black/20 pl-12 pr-4 py-4 outline-none transition duration-200 focus:border-white focus:ring-1 focus:ring-white/40 disabled:opacity-50"
             />
           </div>
         </motion.div>
@@ -131,31 +204,41 @@ export default function ContactForm() {
             <MessageSquare className="absolute left-4 top-5 text-white/40" />
 
             <textarea
+              required
               rows={5}
+              disabled={loading}
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
               placeholder="Your Message"
-              className="w-full rounded-2xl border border-white/15 bg-black/20 pl-12 pr-4 py-4 outline-none resize-none transition duration-200 focus:border-white focus:ring-1 focus:ring-white/40"
+              className="w-full rounded-2xl border border-white/15 bg-black/20 pl-12 pr-4 py-4 outline-none resize-none transition duration-200 focus:border-white focus:ring-1 focus:ring-white/40 disabled:opacity-50"
             />
           </div>
         </motion.div>
 
         {/* BUTTON */}
         <motion.button
+          type="submit"
+          disabled={loading}
           variants={fieldVariants}
           initial="hidden"
           whileInView="show"
           viewport={{ once: false }}
           transition={{ delay: 0.28 }}
-          whileHover={{
-            scale: 1.06,
+          whileHover={loading ? {} : {
+            scale: 1.04,
             transition: { duration: 0.12 },
           }}
-          whileTap={{ scale: 0.97 }}
-          className="w-full rounded-2xl py-4 bg-white/10 border border-white/10 flex items-center justify-center gap-2"
+          whileTap={loading ? {} : { scale: 0.97 }}
+          className="w-full rounded-2xl py-4 bg-white/10 border border-white/10 flex items-center justify-center gap-2 cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
         >
-          <Send size={16} />
-          Send Message
+          {loading ? (
+            <Loader2 className="animate-spin" size={16} />
+          ) : (
+            <Send size={16} />
+          )}
+          {loading ? 'Sending...' : 'Send Message'}
         </motion.button>
-      </div>
+      </form>
 
       {/* SOCIAL */}
       <div className="border-t border-white/10 pt-5 mt-6">
