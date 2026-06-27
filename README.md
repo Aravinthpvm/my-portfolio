@@ -181,19 +181,6 @@ public class Aravinthan {
 
 </details>
 
-<details>
-  <summary><b>🏢 Pinnacle Labs — Full Stack Development Intern &nbsp;|&nbsp; Jun 2025 – Jul 2025 &nbsp;|&nbsp; India (Remote)</b></summary>
-  <br/>
-
-  > <img src="https://img.shields.io/badge/Java-ED8B00?style=flat-square&amp;logo=openjdk&amp;logoColor=white" alt="Java"/>
-  > <img src="https://img.shields.io/badge/Spring%20Boot-6DB33F?style=flat-square&amp;logo=springboot&amp;logoColor=white" alt="Spring Boot"/>
-  > <img src="https://img.shields.io/badge/Git-F05032?style=flat-square&amp;logo=git&amp;logoColor=white" alt="Git"/>
-
-  - 🧩 Developed backend logic for **3+ application modules** in Java, independently learning new design patterns to meet project requirements.
-  - 🐛 Identified and resolved **10+ functional and performance bottlenecks** during testing cycles, documenting findings and communicating solutions to team leads.
-  - 📋 Supported testing, documentation, and release activities following structured development and deployment workflows.
-
-</details>
 
 ---
 

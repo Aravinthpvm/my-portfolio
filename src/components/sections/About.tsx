@@ -327,6 +327,7 @@ export default function About() {
                     borderRadius: "50%",
                     objectFit: "cover",
                     display: "block",
+                    filter: "brightness(0.82)",
                   }}
                 />
               </div>

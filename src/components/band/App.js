@@ -181,6 +181,9 @@ function Band({ isMobile, maxSpeed = 50, minSpeed = 10 }) {
         ctx.closePath();
         ctx.clip();
         
+        // Slightly decrease the exposure (brightness)
+        ctx.filter = 'brightness(0.82)';
+        
         // Draw PP image as cover
         const imgRatio = ppImg.width / ppImg.height;
         const cardRatio = w / h;

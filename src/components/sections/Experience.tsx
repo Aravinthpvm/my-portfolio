@@ -33,19 +33,6 @@ const experienceData = [
       "Followed Agile development practices and collaborative Git workflows across concurrent team tasks.",
       "Delivered production-ready responsive designs aligned with IBM/AICTE design standards."
     ]
-  },
-  {
-    role: "Full Stack Development Intern",
-    company: "Pinnacle Labs",
-    duration: "Jun 2025 – Jul 2025",
-    location: "Remote, India",
-    type: "Internship",
-    stack: ["Java", "Spring Boot", "Git"],
-    bullets: [
-      "Developed backend logic for 3+ application modules in Java, independently learning new design patterns.",
-      "Identified and resolved 10+ functional and performance bottlenecks during testing cycles.",
-      "Supported testing, documentation, and release activities following structured workflows."
-    ]
   }
 ];
 
