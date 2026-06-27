@@ -1,7 +1,8 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { supabase } from '@/lib/supabase'
+import { db, isFirebaseConfigured } from '@/lib/firebase'
+import { collection, onSnapshot, query, orderBy } from 'firebase/firestore'
 import {
   fetchCommentsService,
   createCommentService,
@@ -16,26 +17,22 @@ export default function useComments() {
   useEffect(() => {
     fetchInitialComments()
 
-    if (!supabase) return;
+    if (!isFirebaseConfigured || !db) return;
 
-    const channel = supabase
-      .channel('comments-live')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'comments',
-        },
-        async () => {
-          const data = await fetchCommentsService()
-          setComments(data)
-        }
-      )
-      .subscribe()
+    const q = query(collection(db, 'comments'), orderBy('is_pinned', 'desc'), orderBy('created_at', 'desc'));
+    
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const liveComments = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+      setComments(liveComments);
+    }, (error) => {
+      console.error('Firestore real-time subscription error:', error);
+    });
 
     return () => {
-      supabase.removeChannel(channel)
+      unsubscribe();
     }
   }, [])
 
@@ -75,8 +72,12 @@ export default function useComments() {
         imageUrl,
       })
 
-      // instant UI update (tanpa nunggu realtime)
-      setComments((prev) => [newComment, ...prev])
+      // Instant UI update for better UX (while snapshot is synced)
+      setComments((prev) => {
+        const exists = prev.some(c => c.id === newComment.id);
+        if (exists) return prev;
+        return [newComment, ...prev];
+      })
     } catch (err) {
       console.log(err)
     } finally {
@@ -85,7 +86,7 @@ export default function useComments() {
   }
 
   const likeComment = async (
-    id: number,
+    id: string | number,
     currentLikes: number
   ) => {
     const liked = localStorage.getItem(`liked-${id}`)

@@ -4,7 +4,8 @@ import { useEffect, useState } from "react";
 import { motion, Variants } from "framer-motion";
 import { Code, Award, Globe, FileText, ArrowUpRight, Mail } from "lucide-react";
 import { localProjects, localCertificates } from "@/lib/portfolioData";
-import { supabase } from "@/lib/supabase";
+import { db, isFirebaseConfigured } from "@/lib/firebase";
+import { collection, getCountFromServer } from "firebase/firestore";
 
 /* ================== ANIMATION ================== */
 
@@ -76,24 +77,22 @@ export default function About() {
   }, []);
 
   const fetchStats = async () => {
-    const isLocalOnly = !process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-    if (isLocalOnly) {
+    if (!isFirebaseConfigured || !db) {
       setProjectCount(localProjects.length);
       setCertificateCount(localCertificates.length);
       return;
     }
     try {
-      const { count: projects } = await supabase
-        .from("projects")
-        .select("*", { count: "exact", head: true });
+      const projectsCol = collection(db, "projects");
+      const certsCol = collection(db, "certificates");
+      
+      const projectsSnapshot = await getCountFromServer(projectsCol);
+      const certsSnapshot = await getCountFromServer(certsCol);
 
-      const { count: certificates } = await supabase
-        .from("certificates")
-        .select("*", { count: "exact", head: true });
-
-      setProjectCount(projects || localProjects.length);
-      setCertificateCount(certificates || localCertificates.length);
-    } catch {
+      setProjectCount(projectsSnapshot.data().count ?? localProjects.length);
+      setCertificateCount(certsSnapshot.data().count ?? localCertificates.length);
+    } catch (e) {
+      console.error("fetchStats Firebase error, using static fallback:", e);
       setProjectCount(localProjects.length);
       setCertificateCount(localCertificates.length);
     }
