@@ -23,7 +23,7 @@ let storage: FirebaseStorage | null = null;
 if (isFirebaseConfigured) {
   try {
     const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
-    db = getFirestore(app);
+    db = getFirestore(app, "default");
     storage = getStorage(app);
   } catch (e) {
     console.error('Firebase initialization error:', e);
