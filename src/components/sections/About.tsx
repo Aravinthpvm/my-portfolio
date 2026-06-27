@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { motion, Variants } from "framer-motion";
 import { Code, Award, Globe, FileText, ArrowUpRight, Mail } from "lucide-react";
 import { localProjects, localCertificates } from "@/lib/portfolioData";
+import { supabase } from "@/lib/supabase";
 
 /* ================== ANIMATION ================== */
 
@@ -75,8 +76,27 @@ export default function About() {
   }, []);
 
   const fetchStats = async () => {
-    setProjectCount(localProjects.length);
-    setCertificateCount(localCertificates.length);
+    const isLocalOnly = !process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    if (isLocalOnly) {
+      setProjectCount(localProjects.length);
+      setCertificateCount(localCertificates.length);
+      return;
+    }
+    try {
+      const { count: projects } = await supabase
+        .from("projects")
+        .select("*", { count: "exact", head: true });
+
+      const { count: certificates } = await supabase
+        .from("certificates")
+        .select("*", { count: "exact", head: true });
+
+      setProjectCount(projects || localProjects.length);
+      setCertificateCount(certificates || localCertificates.length);
+    } catch {
+      setProjectCount(localProjects.length);
+      setCertificateCount(localCertificates.length);
+    }
   };
 
   const scrollToPortfolio = () => {
