@@ -5,41 +5,18 @@ const isLocalOnly = !process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_P
 // Fallback comments stored in localStorage
 const getLocalComments = (): any[] => {
   if (typeof window === 'undefined') return [];
-  const stored = localStorage.getItem('portfolio-comments');
+  const stored = localStorage.getItem('portfolio-comments-v2');
   if (stored) {
     try { return JSON.parse(stored); } catch { return []; }
   }
-  const defaultComments = [
-    {
-      id: 1,
-      name: "Alex",
-      comment: "This portfolio looks absolutely fantastic! The 3D background is so smooth.",
-      image_url: null,
-      likes: 5,
-      is_pinned: true,
-      replies: [],
-      created_at: new Date().toISOString(),
-      liked_by_admin: true
-    },
-    {
-      id: 2,
-      name: "Sarah",
-      comment: "Love the micro-animations. Extremely premium and responsive!",
-      image_url: null,
-      likes: 2,
-      is_pinned: false,
-      replies: [],
-      created_at: new Date().toISOString(),
-      liked_by_admin: false
-    }
-  ];
-  localStorage.setItem('portfolio-comments', JSON.stringify(defaultComments));
+  const defaultComments: any[] = [];
+  localStorage.setItem('portfolio-comments-v2', JSON.stringify(defaultComments));
   return defaultComments;
 };
 
 const saveLocalComments = (comments: any[]) => {
   if (typeof window !== 'undefined') {
-    localStorage.setItem('portfolio-comments', JSON.stringify(comments));
+    localStorage.setItem('portfolio-comments-v2', JSON.stringify(comments));
   }
 };
 
