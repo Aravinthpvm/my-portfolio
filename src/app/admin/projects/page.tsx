@@ -149,7 +149,7 @@ export default function ProjectsPage() {
                     <button
                       onClick={() =>
                         router.push(
-                          `/admin/projects/${project.id}`
+                          `/admin/projects/detail?id=${project.id}`
                         )
                       }
                       className="px-3 py-1.5 rounded-xl border border-white/10 hover:bg-white hover:text-black transition text-[12px]"

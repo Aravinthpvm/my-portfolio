@@ -2,8 +2,8 @@ import "./globals.css";
 import RefreshRedirect from '@/components/RefreshRedirect'
 
 export const metadata = {
-  title: "Rifqi Muhammad Aliya",
-  description: "Portfolio...",
+  title: "Aravinthan B | Portfolio",
+  description: "Personal portfolio of Aravinthan B, Software Developer.",
 };
 
 export default function RootLayout({

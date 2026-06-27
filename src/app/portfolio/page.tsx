@@ -4,7 +4,8 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useParams, useRouter } from 'next/navigation'
+import { useSearchParams, useRouter } from 'next/navigation'
+import { Suspense } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { localProjects } from '@/lib/portfolioData'
 import { fetchProjects } from '@/lib/portfolioService'
@@ -22,7 +23,16 @@ import {
 } from 'lucide-react'
 
 export default function PortfolioDetailPage() {
-  const { id } = useParams()
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-black text-white flex items-center justify-center">Loading...</div>}>
+      <PortfolioDetailContent />
+    </Suspense>
+  )
+}
+
+function PortfolioDetailContent() {
+  const searchParams = useSearchParams()
+  const id = searchParams.get('id')
   const router = useRouter()
 
   const [project, setProject] = useState<any>({
