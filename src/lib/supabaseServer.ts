@@ -1,0 +1,34 @@
+import { createServerClient } from "@supabase/ssr";
+import { cookies } from "next/headers";
+
+export async function createSupabaseServer() {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+  if (!supabaseUrl || !supabaseAnonKey) {
+    return {
+      auth: {
+        getSession: async () => ({ data: { session: null } }),
+      },
+    } as any;
+  }
+
+  const cookieStore = await cookies(); // ⬅️ WAJIB await
+
+  return createServerClient(
+    supabaseUrl,
+    supabaseAnonKey,
+    {
+      cookies: {
+        getAll() {
+          return cookieStore.getAll();
+        },
+        setAll(cookiesToSet) {
+          cookiesToSet.forEach(({ name, value, options }) => {
+            cookieStore.set(name, value, options);
+          });
+        },
+      },
+    }
+  );
+}
