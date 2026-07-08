@@ -1,0 +1,17 @@
+[debug] [2026-07-08T06:34:20.180Z] ----------------------------------------------------------------------
+[debug] [2026-07-08T06:34:20.184Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\AXIOM\AppData\Roaming\npm\node_modules\firebase-tools\lib\bin\firebase.js deploy
+[debug] [2026-07-08T06:34:20.184Z] CLI Version:   15.22.3
+[debug] [2026-07-08T06:34:20.184Z] Platform:      win32
+[debug] [2026-07-08T06:34:20.184Z] Node Version:  v24.13.0
+[debug] [2026-07-08T06:34:20.184Z] Detected Agent: unknown
+[debug] [2026-07-08T06:34:20.184Z] Time:          Wed Jul 08 2026 12:04:20 GMT+0530 (India Standard Time)
+[debug] [2026-07-08T06:34:20.184Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2026-07-08T06:34:24.570Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-07-08T06:34:24.570Z] > authorizing via signed-in user (aravindhan456pvm@gmail.com)
+[debug] [2026-07-08T06:34:24.570Z] [iam] checking project my-portfolio-82a88 for permissions ["firebase.projects.get","firebasehosting.sites.update"]
+[debug] [2026-07-08T06:34:24.573Z] Checked if tokens are valid: true, expires at: 1783495384293
+[debug] [2026-07-08T06:34:24.573Z] Checked if tokens are valid: true, expires at: 1783495384293
+[debug] [2026-07-08T06:34:24.574Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/my-portfolio-82a88:testIamPermissions [none]
+[debug] [2026-07-08T06:34:24.574Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/my-portfolio-82a88:testIamPermissions  x-goog-user-project=my-portfolio-82a88
+[debug] [2026-07-08T06:34:24.574Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/my-portfolio-82a88:testIamPermissions {"permissions":["firebase.projects.get","firebasehosting.sites.update"]}

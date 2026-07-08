@@ -164,7 +164,7 @@ export default function Navbar() {
             letterSpacing: '0.1em',
           }}
         >
-          aravinthanb.dev
+          Aravinthanb.dev
         </span>
 
         {!isMobile && (
