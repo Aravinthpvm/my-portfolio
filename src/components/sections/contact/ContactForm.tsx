@@ -92,6 +92,30 @@ export default function ContactForm() {
         })
         localStorage.setItem('portfolio-messages', JSON.stringify(msgs))
       }
+
+      // Send email notification via Web3Forms
+      const web3AccessKey = process.env.NEXT_PUBLIC_WEB3FORMS_ACCESS_KEY
+      if (web3AccessKey && web3AccessKey !== 'YOUR_WEB3FORMS_ACCESS_KEY_HERE') {
+        try {
+          await fetch('https://api.web3forms.com/submit', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Accept: 'application/json',
+            },
+            body: JSON.stringify({
+              access_key: web3AccessKey,
+              subject: 'Someone contacted you via the portfolio',
+              from_name: name.trim(),
+              email: email.trim().toLowerCase(),
+              message: message.trim(),
+            }),
+          })
+        } catch (e) {
+          console.error('Failed to send email via Web3Forms:', e)
+        }
+      }
+
       setStatus({ type: 'success', text: 'Thank you! Your message was sent successfully.' })
       setName('')
       setEmail('')
