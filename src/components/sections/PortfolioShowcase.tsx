@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   X,
@@ -27,6 +27,19 @@ export default function PortfolioShowcase() {
 
   const [activeTab, setActiveTab] =
     useState('projects')
+
+  useEffect(() => {
+    const handleTabChange = (e: Event) => {
+      const customEvent = e as CustomEvent<string>
+      if (customEvent.detail) {
+        setActiveTab(customEvent.detail)
+      }
+    }
+    window.addEventListener('change-portfolio-tab', handleTabChange)
+    return () => {
+      window.removeEventListener('change-portfolio-tab', handleTabChange)
+    }
+  }, [])
 
   const [previewOpen, setPreviewOpen] =
     useState(false)

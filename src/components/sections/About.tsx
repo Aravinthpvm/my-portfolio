@@ -105,6 +105,26 @@ export default function About() {
     }
   };
 
+  const handleStatClick = (title: string) => {
+    let tab = "projects";
+    if (title === "CERTIFICATES") {
+      tab = "certificates";
+    } else if (title === "PROJECTS") {
+      tab = "projects";
+    } else if (title === "COMPLETED WORKS") {
+      tab = "projects";
+    }
+
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(new CustomEvent("change-portfolio-tab", { detail: tab }));
+    }
+
+    const el = document.getElementById("portfolio");
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth" });
+    }
+  };
+
   if (isMobile === null) return null;
 
   const stats = [
@@ -372,6 +392,7 @@ export default function About() {
               key={i}
               variants={pop}
               whileHover={{ scale: 1.03 }}
+              onClick={() => handleStatClick(item.title)}
               style={{
                 position: "relative",
                 padding: 18,
@@ -418,7 +439,6 @@ export default function About() {
               </div>
 
               <div
-                onClick={scrollToPortfolio}
                 style={{
                   position: "absolute",
                   bottom: 14,
