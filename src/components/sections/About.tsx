@@ -89,8 +89,8 @@ export default function About() {
       const projectsSnapshot = await getCountFromServer(projectsCol);
       const certsSnapshot = await getCountFromServer(certsCol);
 
-      setProjectCount(projectsSnapshot.data().count ?? localProjects.length);
-      setCertificateCount(certsSnapshot.data().count ?? localCertificates.length);
+      setProjectCount(projectsSnapshot.data().count || localProjects.length);
+      setCertificateCount(certsSnapshot.data().count || localCertificates.length);
     } catch (e) {
       console.error("fetchStats Firebase error, using static fallback:", e);
       setProjectCount(localProjects.length);
